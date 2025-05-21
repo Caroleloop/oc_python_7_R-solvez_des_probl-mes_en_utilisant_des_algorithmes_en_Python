@@ -1,12 +1,10 @@
 import csv
-from itertools import combinations
 import time
 
-
-# File path
+# Fichier CSV
 file_path = "C:/Formation/Projet_07/Liste+d'actions+-+P7+Python+-+Feuille+1.csv"
 
-# Maximum budget
+# Budget maximal en euros
 MAX_BUDGET = 500
 
 
@@ -52,31 +50,35 @@ def profit_calculation(stocks):
             stock["profit_value"] = (float(stock["cost"])) * (((float(stock["profit"])))) / 100
 
 
-def find_best_combination(stocks):
+def find_best_combination_optimized(stocks):
     """
-    Find the most profitable combination of actions without exceeding the maximum budget.
-
-    Uses a brute-force approach to test all possible combinations of actions,
-    and selects the one that maximizes total profit without exceeding MAX_BUDGET.
-
-    Args:
-        stocks (list): List of dictionaries representing stocks, with the keys 'cost' and 'profit_value'.
-
-    Returns:
-        tuple: A pair (best_combination, best_total_profit), where
-            - best_combination is a list of selected actions,
-            - best_total_profit is the corresponding total profit.
+    Trouve la combinaison d'actions la plus rentable sans dépasser le budget MAX_BUDGET.
+    Implémente une version optimisée du problème du sac à dos (0/1 knapsack).
     """
-    best_profit = 0
-    best_combination = []
-    for i in range(1, len(stocks) + 1):
-        for combo in combinations(stocks, i):
-            total_cost = sum(a["cost"] for a in combo)
-            if total_cost <= MAX_BUDGET:
-                total_profit = sum(a["profit_value"] for a in combo)
-                if total_profit > best_profit:
-                    best_profit = total_profit
-                    best_combination = combo
+
+    precision = 100  # Pour gérer les floats en euros avec 2 décimales
+    max_capacity = int(MAX_BUDGET * precision)
+
+    # Convertir les coûts en entiers pour les utiliser comme indices
+    for stock in stocks:
+        stock["cost_int"] = int(stock["cost"] * precision)
+
+    # Initialiser la table de DP
+    dp = [0.0] * (max_capacity + 1)
+    selected = [[] for _ in range(max_capacity + 1)]
+
+    # Parcours des actions
+    for stock in stocks:
+        for c in range(max_capacity, stock["cost_int"] - 1, -1):
+            new_profit = dp[c - stock["cost_int"]] + stock["profit_value"]
+            if new_profit > dp[c]:
+                dp[c] = new_profit
+                selected[c] = selected[c - stock["cost_int"]] + [stock]
+
+    best_profit = max(dp)
+    best_index = dp.index(best_profit)
+    best_combination = selected[best_index]
+
     return best_combination, best_profit
 
 
@@ -85,11 +87,16 @@ if __name__ == "__main__":
 
     stocks = load_data(file_path)
     profit_calculation(stocks)
-    best_combination, best_profit = find_best_combination(stocks)
+    best_combination, best_profit = find_best_combination_optimized(stocks)
+
     print("Best stock combination:")
+    total_cost = 0
     for stock in best_combination:
         print(f"{stock['name']} - Cost: {stock['cost']} € - Profit: {stock['profit_value']:.2f} €")
-    print(f"\nTotal profit: {best_profit:.2f} €")
+        total_cost += stock["cost"]
+
+    print(f"\nTotal cost: {total_cost:.2f} €")
+    print(f"Total profit: {best_profit:.2f} €")
 
     end = time.time()
     print(f"Execution time: {end - start:.2f} seconds")
