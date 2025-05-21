@@ -4,7 +4,7 @@ import time
 # Fichier CSV
 file_path = "C:/Formation/Projet_07/Liste+d'actions+-+P7+Python+-+Feuille+1.csv"
 
-# Budget maximal en euros
+# Maximum budget
 MAX_BUDGET = 500
 
 
@@ -52,8 +52,19 @@ def profit_calculation(stocks):
 
 def find_best_combination_optimized(stocks):
     """
-    Trouve la combinaison d'actions la plus rentable sans dépasser le budget MAX_BUDGET.
-    Implémente une version optimisée du problème du sac à dos (0/1 knapsack).
+      Find the most profitable combination of actions without exceeding the MAX_BUDGET.
+
+    Implements an optimized version of the 0/1 knapsack problem (dynamic programming),
+    working on costs converted to integers to avoid inaccuracies due to floats.
+
+    Args:
+        stocks (list): List of dictionaries representing stocks,
+                       with keys 'cost' and 'profit_value'.
+
+    Returns:
+        tuple:
+            - list: Best stock combination (list of dictionaries).
+            - float: Total profit associated with this combination.
     """
 
     precision = 100  # Pour gérer les floats en euros avec 2 décimales
