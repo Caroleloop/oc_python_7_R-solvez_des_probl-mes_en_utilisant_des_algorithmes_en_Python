@@ -1,8 +1,8 @@
 import csv
 import time
 
-# Fichier CSV
-file_path = "C:/Formation/Projet_07/Liste+d'actions+-+P7+Python+-+Feuille+1.csv"
+# # Fichier CSV
+# file_path = "C:/Formation/Projet_07/dataset1_Python+P7.csv"
 
 # Maximum budget
 MAX_BUDGET = 500
@@ -24,12 +24,20 @@ def load_data(filename):
     stocks = []
     with open(filename, newline="", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
+        column_names = reader.fieldnames
+        name_col = column_names[0]
+        cost_col = column_names[1]
+        profit_col = column_names[2]
+
         for row in reader:
             try:
-                cost = float(row["Coût par action (en euros)"])
-                profit_percent = float(row["Bénéfice (après 2 ans)"].replace("%", ""))
+                cost = float(row[cost_col])
+                profit_percent_str = row[profit_col].strip()
+                if profit_percent_str.endswith("%"):
+                    profit_percent_str = profit_percent_str[:-1]
+                profit_percent = float(profit_percent_str)
                 if cost > 0 and profit_percent > 0:
-                    stocks.append({"name": row["Actions #"], "cost": cost, "profit": profit_percent})
+                    stocks.append({"name": row[name_col], "cost": cost, "profit": profit_percent})
             except ValueError:
                 continue
     return stocks
@@ -94,6 +102,8 @@ def find_best_combination_optimized(stocks):
 
 
 if __name__ == "__main__":
+    file_path = input("Please enter the full path of the CSV file: ")
+
     start = time.time()
 
     stocks = load_data(file_path)
